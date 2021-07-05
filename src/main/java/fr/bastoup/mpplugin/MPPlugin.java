@@ -15,5 +15,19 @@
  *
  */
 
-public class test {
+package fr.bastoup.mpplugin;
+
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class MPPlugin extends JavaPlugin {
+
+    @Override
+    public void onDisable() {
+        super.onDisable();
+    }
+
+    @Override
+    public void onEnable() {
+        super.onEnable();
+    }
 }
