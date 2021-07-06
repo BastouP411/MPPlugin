@@ -15,30 +15,30 @@
  *
  */
 
-package fr.bastoup.mpplugin;
+package fr.bastoup.mpplugin.dao;
 
-import fr.bastoup.mpplugin.dao.DAOFactory;
-import org.bukkit.plugin.java.JavaPlugin;
+import fr.bastoup.mpplugin.beans.Shop;
+import fr.bastoup.mpplugin.beans.User;
 
-public class MPPlugin extends JavaPlugin {
+import java.util.List;
+import java.util.UUID;
 
-    private DAOFactory daoFactory = null;
+public interface ShopDAO {
+    void create(Shop shop);
 
-    @Override
-    public void onDisable() {
-        if(this.daoFactory != null) {
-            this.daoFactory.closeFactory();
-            this.daoFactory = null;
-        }
-    }
+    void update(Shop shop);
 
-    @Override
-    public void onEnable() {
-        this.saveDefaultConfig();
+    void delete(Shop shop);
 
-        this.daoFactory = DAOFactory.getInstance(this);
-        this.daoFactory.setupDB();
+    List<Shop> getUserShops(UUID uuid);
 
-    }
+    List<Shop> getUserShops(String uuid);
 
+    Shop getUserShop(UUID uuid, String name);
+
+    Shop getUserShop(String uuid, String name);
+
+    Shop get(long id);
+
+    Shop get(int x, int y, int z);
 }

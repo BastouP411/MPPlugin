@@ -15,30 +15,21 @@
  *
  */
 
-package fr.bastoup.mpplugin;
+package fr.bastoup.mpplugin.dao;
 
-import fr.bastoup.mpplugin.dao.DAOFactory;
-import org.bukkit.plugin.java.JavaPlugin;
+public class DAOConfigurationException extends RuntimeException {
 
-public class MPPlugin extends JavaPlugin {
+    private static final long serialVersionUID = 1L;
 
-    private DAOFactory daoFactory = null;
-
-    @Override
-    public void onDisable() {
-        if(this.daoFactory != null) {
-            this.daoFactory.closeFactory();
-            this.daoFactory = null;
-        }
+    public DAOConfigurationException( String message ) {
+        super( message );
     }
 
-    @Override
-    public void onEnable() {
-        this.saveDefaultConfig();
-
-        this.daoFactory = DAOFactory.getInstance(this);
-        this.daoFactory.setupDB();
-
+    public DAOConfigurationException( String message, Throwable cause ) {
+        super( message, cause );
     }
 
+    public DAOConfigurationException( Throwable cause ) {
+        super( cause );
+    }
 }

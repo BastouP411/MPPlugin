@@ -1,0 +1,3 @@
+  name: MPPlugin
+  main: fr.bastoup.mpplugin.MPPlugin
+  version: 1.0-SNAPSHOT
