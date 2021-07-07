@@ -5,4 +5,7 @@ database:
   username: ""
   password: ""
 
+currency: "€"
+startingMoney: 500
+
 bedRate: 0.5

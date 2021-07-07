@@ -1,3 +1,41 @@
   name: MPPlugin
   main: fr.bastoup.mpplugin.MPPlugin
   version: 1.0-SNAPSHOT
+  description: Plugin du serveur de la MP*1
+  api-version: 1.17
+  author: BastouP
+
+  commands:
+    shop:
+      description: Gérer un shop.
+      permission: mpplugin.shop
+      permission-message: Vous n'avez pas la permission d'utiliser cette commande.
+      usage: "/shop <create|delete> [nom] [prix]"
+    bank:
+      description: Gérer les banques.
+      permission: mpplugin.bank
+      permission-message: Vous n'avez pas la permission d'utiliser cette commande.
+      usage: "/bank <create|delete> [nom] [prix]"
+    money:
+      description: Gérer les banques.
+      permission: mpplugin.money
+      permission-message: Vous n'avez pas la permission d'utiliser cette commande.
+      usage: "/money <balance|transfer> [joueur] [montant]"
+
+  permissions:
+    mpplugin.shop:
+      description: Donne la permission d'utiliser /shop.
+      default: true
+    mpplugin.bank:
+      description: Donne la permission d'utiliser /bank.
+      default: op
+    mpplugin.money:
+      description: Donne la permission d'utiliser /money.
+      default: true
+    mpplugin.*:
+      description: Donne la permission d'utiliser toutes les commandes.
+      default: op
+      children:
+        mpplugin.shop: true
+        mpplugin.bank: true
+        mpplugin.money: true

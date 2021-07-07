@@ -65,8 +65,8 @@ public class ShopDAOImpl implements ShopDAO {
                     shop.getY(),
                     shop.getZ()
             );
-            int statut = preparedStatement.executeUpdate();
-            if ( statut == 0 ) {
+            int status = preparedStatement.executeUpdate();
+            if ( status == 0 ) {
                 throw new DAOException( "No Shop created." );
             }
 
@@ -103,7 +103,7 @@ public class ShopDAOImpl implements ShopDAO {
                     shop.getZ(),
                     shop.getId()
             );
-            int statut = preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
         } catch ( SQLException e ) {
             throw new DAOException( e );
         } finally {
@@ -119,7 +119,7 @@ public class ShopDAOImpl implements ShopDAO {
         try {
             con = factory.getConnection();
             preparedStatement = preparedStatementInit( con, SQL_DELETE, false, shop.getId());
-            int statut = preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
         } catch ( SQLException e ) {
             throw new DAOException( e );
         } finally {
