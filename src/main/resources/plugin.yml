@@ -10,12 +10,12 @@
       description: Gérer un shop.
       permission: mpplugin.shop
       permission-message: Vous n'avez pas la permission d'utiliser cette commande.
-      usage: "/shop <create|delete> [nom] [prix]"
+      usage: "/shop <create|remove> [nom] [prix]"
     bank:
       description: Gérer les banques.
       permission: mpplugin.bank
       permission-message: Vous n'avez pas la permission d'utiliser cette commande.
-      usage: "/bank <create|delete> [nom] [prix]"
+      usage: "/bank <create|remove> [nom] [prix]"
     money:
       description: Gérer les banques.
       permission: mpplugin.money

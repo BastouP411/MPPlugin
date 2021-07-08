@@ -17,15 +17,22 @@
 
 package fr.bastoup.mpplugin;
 
+import fr.bastoup.mpplugin.commands.BankCommand;
 import fr.bastoup.mpplugin.commands.MoneyCommand;
+import fr.bastoup.mpplugin.commands.ShopCommand;
 import fr.bastoup.mpplugin.dao.DAOFactory;
+import fr.bastoup.mpplugin.events.BankEvents;
+import fr.bastoup.mpplugin.events.ShopEvents;
+import fr.bastoup.mpplugin.handlers.ShopHandler;
 import fr.bastoup.mpplugin.handlers.UserHandler;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class MPPlugin extends JavaPlugin {
 
     private DAOFactory daoFactory = null;
     private UserHandler userHandler = null;
+    private ShopHandler shopHandler = null;
 
     @Override
     public void onDisable() {
@@ -43,6 +50,7 @@ public class MPPlugin extends JavaPlugin {
         this.daoFactory.setupDB();
 
         this.userHandler = new UserHandler(this);
+        this.shopHandler = new ShopHandler(this);
 
         registerCommands();
         registerEvents();
@@ -56,12 +64,24 @@ public class MPPlugin extends JavaPlugin {
         return userHandler;
     }
 
+    public ShopHandler getShopHandler() {
+        return shopHandler;
+    }
+
     public void registerCommands() {
         this.getCommand("money").setExecutor(new MoneyCommand(this));
         this.getCommand("money").setTabCompleter(new MoneyCommand.TabCompleter());
+
+        this.getCommand("shop").setExecutor(new ShopCommand(this));
+        this.getCommand("shop").setTabCompleter(new ShopCommand.TabCompleter());
+
+        this.getCommand("bank").setExecutor(new BankCommand(this));
+        this.getCommand("bank").setTabCompleter(new BankCommand.TabCompleter());
     }
 
     public void registerEvents() {
-
+        PluginManager pm = this.getServer().getPluginManager();
+        pm.registerEvents(new ShopEvents(this), this);
+        pm.registerEvents(new BankEvents(this), this);
     }
 }

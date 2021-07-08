@@ -30,7 +30,7 @@ public class User {
     }
 
     public User(String uuid, long money) {
-        this.uuid = UUID.fromString(uuid);
+        this.uuid = uuid == null ? null : UUID.fromString(uuid);
         this.money = money;
     }
 
@@ -43,7 +43,7 @@ public class User {
     }
 
     public void setUUID(String uuid) {
-        this.uuid = UUID.fromString(uuid);
+        this.uuid = uuid == null ? null : UUID.fromString(uuid);
     }
 
     public long getMoney() {

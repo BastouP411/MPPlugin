@@ -35,8 +35,8 @@ public class ShopDAOImpl implements ShopDAO {
 
     private static final String SQL_SELECT = "SELECT * FROM shops WHERE id = ?;";
     private static final String SQL_SELECT_COORDS = "SELECT * FROM shops WHERE x = ? AND y = ? AND z = ?;";
-    private static final String SQL_SELECT_UUID = "SELECT * FROM shops WHERE uuid = ?;";
-    private static final String SQL_SELECT_UUID_NAME = "SELECT * FROM shops WHERE uuid = ? AND LOWER(name) = LOWER(?);";
+    private static final String SQL_SELECT_UUID = "SELECT * FROM shops WHERE owner = ?;";
+    private static final String SQL_SELECT_UUID_NAME = "SELECT * FROM shops WHERE owner = ? AND LOWER(name) = LOWER(?);";
     private static final String SQL_INSERT = "INSERT INTO shops (owner, name, bank, price, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "UPDATE shops SET owner = ?, name = ?, bank = ?, price = ?, x = ?, y = ?, z = ? WHERE id = ?;";
     private static final String SQL_DELETE = "DELETE FROM shops WHERE id = ?;";
@@ -56,10 +56,9 @@ public class ShopDAOImpl implements ShopDAO {
         try {
             con = factory.getConnection();
             preparedStatement = preparedStatementInit( con, SQL_INSERT, true,
-                    shop.getOwner().toString(),
+                    shop.getOwner() == null ? null : shop.getOwner().toString(),
                     shop.getName(),
                     shop.isBank(),
-                    shop.getPrice(),
                     shop.getPrice(),
                     shop.getX(),
                     shop.getY(),
@@ -93,7 +92,7 @@ public class ShopDAOImpl implements ShopDAO {
         try {
             con = factory.getConnection();
             preparedStatement = preparedStatementInit( con, SQL_UPDATE, false,
-                    shop.getOwner().toString(),
+                    shop.getOwner() == null ? null : shop.getOwner().toString(),
                     shop.getName(),
                     shop.isBank(),
                     shop.getPrice(),
@@ -129,7 +128,7 @@ public class ShopDAOImpl implements ShopDAO {
 
     @Override
     public List<Shop> getUserShops(UUID uuid) {
-        return getUserShops(uuid.toString());
+        return getUserShops(uuid == null ? null : uuid.toString());
     }
 
     @Override
@@ -159,7 +158,7 @@ public class ShopDAOImpl implements ShopDAO {
 
     @Override
     public Shop getUserShop(UUID uuid, String name) {
-        return getUserShop(uuid.toString(), name);
+        return getUserShop(uuid == null ? null : uuid.toString(), name);
     }
 
     @Override
@@ -237,7 +236,7 @@ public class ShopDAOImpl implements ShopDAO {
     private Shop map(ResultSet resultSet) throws SQLException {
         return new Shop(
                 resultSet.getLong("id"),
-                resultSet.getString("uuid"),
+                resultSet.getString("owner"),
                 resultSet.getString("name"),
                 resultSet.getBoolean("bank"),
                 resultSet.getInt("price"),

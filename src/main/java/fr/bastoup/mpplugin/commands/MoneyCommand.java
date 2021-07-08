@@ -108,7 +108,7 @@ public class MoneyCommand  implements CommandExecutor {
                 return true;
             }
 
-            User to = plugin.getUserHandler().getUser(toUUID);
+            User to = plugin.getUserHandler().getOrCreateUser(toUUID);
 
             try {
                 plugin.getUserHandler().transferMoney(usr, to, amount);

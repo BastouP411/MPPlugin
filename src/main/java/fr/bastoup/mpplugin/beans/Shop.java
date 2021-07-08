@@ -42,7 +42,7 @@ public class Shop {
 
     public Shop(long id, String owner, String name, boolean bank, int price, int x, int y, int z) {
         this.id = id;
-        this.owner = UUID.fromString(owner);
+        this.owner = owner == null ? null : UUID.fromString(owner);
         this.name = name;
         this.bank = bank;
         this.price = price;
@@ -79,7 +79,7 @@ public class Shop {
     }
 
     public void setOwner(String owner) {
-        this.owner = UUID.fromString(owner);
+        this.owner = owner == null ? null : UUID.fromString(owner);
     }
 
     public void setOwner(User owner) {
