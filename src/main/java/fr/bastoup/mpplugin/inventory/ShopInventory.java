@@ -39,7 +39,7 @@ public class ShopInventory implements InventoryHolder {
         this.plugin = plugin;
         this.chest = chest;
         this.shop = shop;
-        this.inv = Bukkit.createInventory(this, chest.getSize(), shop.getName());
+        this.inv = Bukkit.createInventory(this, chest.getSize(), ChatColor.AQUA + shop.getName());
 
         ItemStack[] content = chest.getContents();
         for(int i = 0; i < content.length; i++) {

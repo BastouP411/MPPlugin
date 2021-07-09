@@ -26,6 +26,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 
+import java.util.List;
 import java.util.UUID;
 
 public class ShopHandler {
@@ -131,5 +132,9 @@ public class ShopHandler {
         Shop shop = new Shop(0, (String)null, name, true, price, x, y, z);
         plugin.getDAOFactory().getShopDAO().create(shop);
         return shop;
+    }
+
+    public List<Shop> getShops(UUID uuid) {
+        return plugin.getDAOFactory().getShopDAO().getUserShops(uuid);
     }
 }

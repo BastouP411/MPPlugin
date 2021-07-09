@@ -28,12 +28,14 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -42,6 +44,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 public class ShopEvents implements Listener {
+    
+    private static final BlockFace[] HORIZ_FACES = new BlockFace[] {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
     private final MPPlugin plugin;
 
@@ -68,6 +72,60 @@ public class ShopEvents implements Listener {
                 event.setCancelled(true);
             }
         }
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
+        if(event.getBlock().getType().equals(Material.HOPPER)) {
+            if(event.getBlockAgainst().getType().equals(Material.CHEST) || event.getBlockAgainst().getType().equals(Material.BARREL)) {
+                Location loc = event.getBlockAgainst().getLocation();
+                Shop shop = plugin.getShopHandler().getShop(loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
+                if(shop != null && !shop.getOwner().equals(event.getPlayer().getUniqueId())) {
+                    event.getPlayer().sendMessage(ChatColor.RED + "Vous ne pouvez pas placer d'entonnoir sur un shop qui ne vous appartiens pas.");
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            Location blockLoc = event.getBlock().getLocation();
+
+            Block blockTop = new Location(blockLoc.getWorld(), blockLoc.getBlockX(), blockLoc.getBlockY() + 1, blockLoc.getBlockZ()).getBlock();
+            if(blockTop.getType().equals(Material.CHEST) || blockTop.getType().equals(Material.BARREL)) {
+                Location loc = blockTop.getLocation();
+                Shop shop = plugin.getShopHandler().getShop(loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
+                if(shop != null && !shop.getOwner().equals(event.getPlayer().getUniqueId())) {
+                    event.getPlayer().sendMessage(ChatColor.RED + "Vous ne pouvez pas placer d'entonnoir sur un shop qui ne vous appartiens pas.");
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            Block blockBottom = new Location(blockLoc.getWorld(), blockLoc.getBlockX(), blockLoc.getBlockY() - 1, blockLoc.getBlockZ()).getBlock();
+            if(blockBottom.getType().equals(Material.CHEST) || blockBottom.getType().equals(Material.BARREL)) {
+                Location loc = blockBottom.getLocation();
+                Shop shop = plugin.getShopHandler().getShop(loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
+                if(shop != null && !shop.getOwner().equals(event.getPlayer().getUniqueId())) {
+                    event.getPlayer().sendMessage(ChatColor.RED + "Vous ne pouvez pas placer d'entonnoir sur un shop qui ne vous appartiens pas.");
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
+        if(event.getBlock().getType().equals(Material.CHEST)) {
+            for(BlockFace face : HORIZ_FACES) {
+                Block block = event.getBlock().getRelative(face);
+                if(block.getType() == Material.CHEST) {
+                    Location loc = block.getLocation();
+                    Shop shop = plugin.getShopHandler().getShop(loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
+                    if(shop != null && !shop.getOwner().equals(event.getPlayer().getUniqueId())) {
+                        event.getPlayer().sendMessage(ChatColor.RED + "Vous ne pouvez pas cr\u00e9er de double coffre avec un shop qui ne vous appartient pas.");
+                        event.setCancelled(true);
+                    }
+                }
+            }
+        }
+
     }
 
     @EventHandler
@@ -106,12 +164,14 @@ public class ShopEvents implements Listener {
 
             if(shop == null) {
                 event.getWhoClicked().sendMessage(ChatColor.RED + "Ce shop n'existe plus.");
+                event.setCancelled(true);
                 event.getWhoClicked().closeInventory();
                 return;
             }
 
             if(usr.getMoney() < shop.getPrice()) {
                 event.getWhoClicked().sendMessage(ChatColor.RED + "Vous n'avez pas assez d'argent.");
+                event.setCancelled(true);
                 event.getWhoClicked().closeInventory();
                 return;
             }
@@ -127,6 +187,7 @@ public class ShopEvents implements Listener {
                 container = barrel.getInventory();
             } else {
                 event.getWhoClicked().sendMessage(ChatColor.RED + "Le shop a eu un probl\u00e8me.");
+                event.setCancelled(true);
                 event.getWhoClicked().closeInventory();
                 return;
             }
@@ -134,6 +195,7 @@ public class ShopEvents implements Listener {
             ItemStack item = container.getItem(slot);
             if(item == null || !item.getType().equals(event.getCurrentItem().getType()) || item.getAmount() != event.getCurrentItem().getAmount()) {
                 event.getWhoClicked().sendMessage(ChatColor.RED + "Le shop a eu un probl\u00e8me.");
+                event.setCancelled(true);
                 event.getWhoClicked().closeInventory();
                 return;
             }
@@ -142,18 +204,21 @@ public class ShopEvents implements Listener {
                 plugin.getUserHandler().transferMoney(usr, plugin.getUserHandler().getOrCreateUser(shop.getOwner()), shop.getPrice());
             } catch (HandlersException e) {
                 event.getWhoClicked().sendMessage(ChatColor.RED + "Vous n'avez pas assez d'argent.");
+                event.setCancelled(true);
                 event.getWhoClicked().closeInventory();
                 return;
             }
 
+            event.setCancelled(true);
             String currency = plugin.getConfig().getString("currency");
             container.setItem(slot, new ItemStack(Material.AIR));
+            event.getClickedInventory().setItem(slot, new ItemStack(Material.AIR));
             event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), item);
-            event.getWhoClicked().closeInventory();
 
             event.getWhoClicked().sendMessage(ChatColor.DARK_AQUA + "[SHOP] " + ChatColor.AQUA + "Vous avez d\u00e9pens\u00e9 "
                     + ChatColor.GREEN + shop.getPrice() + " " + currency + ChatColor.AQUA + " dans le shop "
                     + ChatColor.GREEN + shop.getName() + ChatColor.AQUA + ".");
+
 
             Player owner = Bukkit.getPlayer(shop.getOwner());
             if(owner != null) {

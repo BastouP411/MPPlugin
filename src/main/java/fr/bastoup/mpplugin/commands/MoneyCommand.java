@@ -26,7 +26,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -120,6 +119,7 @@ public class MoneyCommand  implements CommandExecutor {
             player.sendMessage(ChatColor.DARK_AQUA + "[BANQUE] " + ChatColor.AQUA +  "Vous avez envoy\u00E9 "
                     + ChatColor.GREEN + amount + " " + currency + ChatColor.AQUA + " \u00e0 " + ChatColor.GREEN
                     + name + ChatColor.AQUA + ".");
+
             if(toPlayer != null) {
                 toPlayer.sendMessage(ChatColor.DARK_AQUA + "[BANQUE] " + ChatColor.AQUA +  "Vous avez re\u00e7u "
                         + ChatColor.GREEN + amount + " " + currency + ChatColor.AQUA + " de la part de "
