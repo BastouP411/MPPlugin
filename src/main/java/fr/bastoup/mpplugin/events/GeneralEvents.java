@@ -18,26 +18,11 @@
 package fr.bastoup.mpplugin.events;
 
 import fr.bastoup.mpplugin.MPPlugin;
-import fr.bastoup.mpplugin.beans.Shop;
-import fr.bastoup.mpplugin.beans.User;
-import fr.bastoup.mpplugin.handlers.HandlersException;
-import fr.bastoup.mpplugin.inventory.BankInventory;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerBedEnterEvent;
-import org.bukkit.event.player.PlayerBedLeaveEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.event.player.*;
 
 import java.util.Collection;
 
@@ -54,6 +39,17 @@ public class GeneralEvents implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         plugin.getScoreboardHandler().updateScoreboard(event.getPlayer());
+        updateBed();
+    }
+
+    @EventHandler
+    public void onPlayerLeave(PlayerQuitEvent event) {
+        updateBed();
+    }
+
+    @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        updateBed();
     }
 
     @EventHandler
@@ -62,8 +58,25 @@ public class GeneralEvents implements Listener {
             return;
 
         sleepers++;
+        updateBed();
+
+    }
+
+    @EventHandler
+    public void onPlayerBedLeave(PlayerBedLeaveEvent event) {
+        sleepers--;
+        if(sleepers < 0) {
+            sleepers = 0;
+        } else {
+            updateBed();
+        }
+    }
+
+    private void updateBed() {
         double limit = plugin.getConfig().getDouble("bedRate");
-        Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
+        String level = (String) plugin.getServerProperties().get("level-name");
+        World world = Bukkit.getWorld(level);
+        Collection<? extends Player> players = world.getPlayers();
         int count = players.size();
         double rate = ((double) sleepers)/((double) count);
         long percent = Math.round(rate * 100);
@@ -76,23 +89,8 @@ public class GeneralEvents implements Listener {
                 if(pl.isSleeping())
                     pl.wakeup(true);
             }
-            event.getPlayer().getWorld().setTime(0);
-        }
 
-    }
-
-    @EventHandler
-    public void onPlayerBedLeave(PlayerBedLeaveEvent event) {
-        sleepers--;
-        if(sleepers < 0) {
-            sleepers = 0;
-        } else {
-            Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
-            int count = players.size();
-            double rate = ((double) sleepers)/((double) count);
-            long percent = Math.round(rate * 100);
-            Bukkit.broadcastMessage(ChatColor.DARK_AQUA + "[SLEEP] " + ChatColor.GREEN + sleepers + "/" + count + " ("
-                    + percent + "%) " + ChatColor.AQUA + "joueurs sont en train de dormir.");
+            world.setTime(0);
         }
     }
 
