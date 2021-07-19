@@ -33,9 +33,9 @@ public class DAOFactory {
 
     private final HikariDataSource pool;
 
-    private static final String USERS_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `users` ( `uuid` varchar(60) NOT NULL, `money` bigint(20) NOT NULL, PRIMARY KEY (`uuid`), UNIQUE KEY `uuid_UNIQUE` (`uuid`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-    private static final String SHOPS_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `shops` ( `id` BIGINT(20) NOT NULL AUTO_INCREMENT, `owner` VARCHAR(60), `name` VARCHAR(15) NOT NULL, `bank` TINYINT(1) NOT NULL, `price` INT NOT NULL, `x` INT NOT NULL, `y` INT NOT NULL, `z` INT NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `id_UNIQUE` (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-    private static final String MAIL_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `mail` ( `id` BIGINT(20) NOT NULL AUTO_INCREMENT, `to` VARCHAR(60) NOT NULL, `from` VARCHAR(60) NOT NULL, `message` VARCHAR(2000) NOT NULL, `read` TINYINT(1) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `id_UNIQUE` (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+    private static final String USERS_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `users` ( `uuid` varchar(60) NOT NULL, `money` bigint(20) NOT NULL, `homeX` bigint(20), `homeY` bigint(20), `homeZ` bigint(20), `homeWorld` varchar(60), PRIMARY KEY (`uuid`), UNIQUE KEY `uuid_UNIQUE` (`uuid`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+    private static final String SHOPS_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `shops` ( `id` BIGINT(20) NOT NULL AUTO_INCREMENT, `owner` VARCHAR(60), `name` VARCHAR(15) NOT NULL, `bank` TINYINT(1) NOT NULL, `price` INT NOT NULL, `x` INT NOT NULL, `y` INT NOT NULL, `z` INT NOT NULL, `stock` bigint(20) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `id_UNIQUE` (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+    private static final String SHOP_MANAGER_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `managers` (`id` BIGINT(20) NOT NULL AUTO_INCREMENT, `user` VARCHAR(60) NOT NULL, `shop` BIGINT(20) NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4;";
 
     public static DAOFactory getInstance(MPPlugin mpPlugin) throws DAOConfigurationException {
         FileConfiguration conf = mpPlugin.getConfig();
@@ -77,6 +77,7 @@ public class DAOFactory {
 
             stmt.executeUpdate(USERS_TABLE_CREATE);
             stmt.executeUpdate(SHOPS_TABLE_CREATE);
+            stmt.executeUpdate(SHOP_MANAGER_TABLE_CREATE);
         } catch (SQLException e) {
             throw new DAOException(e);
         } finally {
@@ -98,5 +99,9 @@ public class DAOFactory {
 
     public ShopDAO getShopDAO() {
         return new ShopDAOImpl(this);
+    }
+
+    public ShopManagerDAO getShopManagerDAO() {
+        return new ShopManagerDAOImpl(this);
     }
 }

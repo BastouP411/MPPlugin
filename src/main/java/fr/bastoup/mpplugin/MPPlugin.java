@@ -17,9 +17,7 @@
 
 package fr.bastoup.mpplugin;
 
-import fr.bastoup.mpplugin.commands.BankCommand;
-import fr.bastoup.mpplugin.commands.MoneyCommand;
-import fr.bastoup.mpplugin.commands.ShopCommand;
+import fr.bastoup.mpplugin.commands.*;
 import fr.bastoup.mpplugin.dao.DAOFactory;
 import fr.bastoup.mpplugin.events.BankEvents;
 import fr.bastoup.mpplugin.events.GeneralEvents;
@@ -31,6 +29,10 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 public class MPPlugin extends JavaPlugin {
 
     private DAOFactory daoFactory = null;
@@ -38,6 +40,7 @@ public class MPPlugin extends JavaPlugin {
     private UserHandler userHandler = null;
     private ShopHandler shopHandler = null;
     private ScoreboardHandler scoreboardHandler = null;
+    private Properties serverProperties;
 
     @Override
     public void onDisable() {
@@ -49,6 +52,12 @@ public class MPPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        try {
+            this.serverProperties();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         this.saveDefaultConfig();
 
         this.daoFactory = DAOFactory.getInstance(this);
@@ -78,7 +87,11 @@ public class MPPlugin extends JavaPlugin {
         return scoreboardHandler;
     }
 
-    public void registerCommands() {
+    public Properties getServerProperties() {
+        return serverProperties;
+    }
+
+    private void registerCommands() {
         this.getCommand("money").setExecutor(new MoneyCommand(this));
         this.getCommand("money").setTabCompleter(new MoneyCommand.TabCompleter());
 
@@ -87,9 +100,14 @@ public class MPPlugin extends JavaPlugin {
 
         this.getCommand("bank").setExecutor(new BankCommand(this));
         this.getCommand("bank").setTabCompleter(new BankCommand.TabCompleter());
+
+        this.getCommand("home").setExecutor(new HomeCommand(this));
+        this.getCommand("home").setTabCompleter(new HomeCommand.TabCompleter());
+
+        this.getCommand("spawn").setExecutor(new SpawnCommand(this));
     }
 
-    public void registerEvents() {
+    private void registerEvents() {
         PluginManager pm = this.getServer().getPluginManager();
         pm.registerEvents(new ShopEvents(this), this);
         pm.registerEvents(new BankEvents(this), this);
@@ -97,5 +115,12 @@ public class MPPlugin extends JavaPlugin {
 
         BukkitScheduler sc = this.getServer().getScheduler();
         sc.runTaskTimer(this, new ScoreboardHandler.UpdaterTask(this), 10, 10);
+    }
+
+    private void serverProperties() throws IOException {
+        this.serverProperties = new Properties();
+
+        FileInputStream in = new FileInputStream("server.properties");
+        this.serverProperties.load(in);
     }
 }

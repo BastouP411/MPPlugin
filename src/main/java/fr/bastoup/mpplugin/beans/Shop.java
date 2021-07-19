@@ -20,6 +20,7 @@ package fr.bastoup.mpplugin.beans;
 import java.util.UUID;
 
 public class Shop {
+    private long stock;
     private long id;
     private UUID owner;
     private String name;
@@ -29,7 +30,7 @@ public class Shop {
     private int y;
     private int z;
 
-    public Shop(long id, UUID owner, String name, boolean bank, int price, int x, int y, int z) {
+    public Shop(long id, UUID owner, String name, boolean bank, int price, int x, int y, int z, long stock) {
         this.id = id;
         this.owner = owner;
         this.name = name;
@@ -38,9 +39,10 @@ public class Shop {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.stock = stock;
     }
 
-    public Shop(long id, String owner, String name, boolean bank, int price, int x, int y, int z) {
+    public Shop(long id, String owner, String name, boolean bank, int price, int x, int y, int z, long stock) {
         this.id = id;
         this.owner = owner == null ? null : UUID.fromString(owner);
         this.name = name;
@@ -49,9 +51,10 @@ public class Shop {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.stock = stock;
     }
 
-    public Shop(long id, User owner, String name, boolean bank, int price, int x, int y, int z) {
+    public Shop(long id, User owner, String name, boolean bank, int price, int x, int y, int z, long stock) {
         this.id = id;
         this.owner = owner.getUUID();
         this.name = name;
@@ -60,6 +63,7 @@ public class Shop {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.stock = stock;
     }
 
     public long getId() {
@@ -132,5 +136,13 @@ public class Shop {
 
     public void setZ(int z) {
         this.z = z;
+    }
+
+    public long getStock() {
+        return stock;
+    }
+
+    public void setStock(long stock) {
+        this.stock = stock;
     }
 }

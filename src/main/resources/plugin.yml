@@ -21,6 +21,16 @@
       permission: mpplugin.money
       permission-message: Vous n'avez pas la permission d'utiliser cette commande.
       usage: "/money <balance|transfer> [joueur] [montant]"
+    spawn:
+      description: Permet de revenir au spawn.
+      permission: mpplugin.spawn
+      permission-message: Vous n'avez pas la permission d'utiliser cette commande.
+      usage: "/spawn"
+    home:
+      description: Permet de gérer sa maison.
+      permission: mpplugin.home
+      permission-message: Vous n'avez pas la permission d'utiliser cette commande.
+      usage: "/home [set]"
 
   permissions:
     mpplugin.shop:
@@ -32,6 +42,12 @@
     mpplugin.money:
       description: Donne la permission d'utiliser /money.
       default: true
+    mpplugin.spawn:
+      description: Donne la permission d'utiliser /spawn.
+      default: true
+    mpplugin.home:
+      description: Donne la permission d'utiliser /home.
+      default: true
     mpplugin.*:
       description: Donne la permission d'utiliser toutes les commandes.
       default: op
@@ -39,3 +55,5 @@
         mpplugin.shop: true
         mpplugin.bank: true
         mpplugin.money: true
+        mpplugin.home: true
+        mpplugin.spawn: true

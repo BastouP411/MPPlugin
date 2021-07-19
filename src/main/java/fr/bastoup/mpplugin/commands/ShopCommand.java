@@ -19,6 +19,7 @@ package fr.bastoup.mpplugin.commands;
 
 import fr.bastoup.mpplugin.MPPlugin;
 import fr.bastoup.mpplugin.beans.Shop;
+import fr.bastoup.mpplugin.beans.ShopManager;
 import fr.bastoup.mpplugin.beans.User;
 import fr.bastoup.mpplugin.handlers.HandlersException;
 import org.bukkit.Bukkit;
@@ -53,7 +54,7 @@ public class ShopCommand implements CommandExecutor {
 
         if(args.length == 0) {
             sender.sendMessage(ChatColor.RED + "Vous devez fournir au moins un argument.");
-            sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+            sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
             return true;
         }
 
@@ -61,7 +62,7 @@ public class ShopCommand implements CommandExecutor {
         Block block = player.getTargetBlockExact(5);
         if(block == null) {
             sender.sendMessage(ChatColor.RED + "Vous devez regarder un panneau.");
-            sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+            sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
             return true;
         }
         Location loc = block.getLocation();
@@ -71,13 +72,13 @@ public class ShopCommand implements CommandExecutor {
                 Shop shop = plugin.getShopHandler().getShop(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
                 if(shop == null) {
                     sender.sendMessage(ChatColor.RED + "Un shop n'existe pas \u00E0 cette position.");
-                    sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+                    sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
                     return true;
                 }
 
                 if(shop.getOwner() == null || !shop.getOwner().equals(player.getUniqueId())) {
                     sender.sendMessage(ChatColor.RED + "Vous ne poss\u00E9dez pas ce shop.");
-                    sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+                    sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
                     return true;
                 }
                 plugin.getShopHandler().removeShop(player.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
@@ -85,19 +86,19 @@ public class ShopCommand implements CommandExecutor {
                         + ChatColor.GREEN + shop.getName() + ChatColor.AQUA + ".");
             } catch (HandlersException e) {
                 sender.sendMessage(ChatColor.RED + e.getMessage());
-                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
                 return true;
             }
         } else if(args[0].equalsIgnoreCase("create")) {
             if(args.length < 3){
                 sender.sendMessage(ChatColor.RED + "Vous devez fournir au moins un nom et un prix.");
-                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
                 return true;
             }
 
             if(args[1].length() == 0 || args[1].length() > 15) {
                 sender.sendMessage(ChatColor.RED + "Le nom du shop doit faire moins de 15 caract\u00E8res.");
-                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
                 return true;
             }
 
@@ -106,13 +107,13 @@ public class ShopCommand implements CommandExecutor {
                 price = Integer.parseInt(args[2]);
             } catch(NumberFormatException e) {
                 sender.sendMessage(ChatColor.RED + "Vous devez fournir un nombre strictement positif.");
-                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
                 return true;
             }
 
             if(price <= 0) {
                 sender.sendMessage(ChatColor.RED + "Vous devez fournir un nombre strictement positif.");
-                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
                 return true;
             }
 
@@ -120,7 +121,7 @@ public class ShopCommand implements CommandExecutor {
                 plugin.getShopHandler().createShop(player.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), player.getUniqueId(), args[1], price);
             } catch (HandlersException e) {
                 sender.sendMessage(ChatColor.RED + e.getMessage());
-                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
                 return true;
             }
 
@@ -128,9 +129,69 @@ public class ShopCommand implements CommandExecutor {
                     + ChatColor.GREEN + args[1] + ChatColor.AQUA + " au prix de " + ChatColor.GREEN
                     + price + " " + currency + ChatColor.AQUA + ".");
 
+        } else if(args[0].equalsIgnoreCase("manager")) {
+            if(args.length < 2){
+                sender.sendMessage(ChatColor.RED + "Vous devez fournir au moins un nom de joueur.");
+                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
+                return true;
+            }
+
+            Shop shop = plugin.getShopHandler().getShop(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+            if(shop == null) {
+                sender.sendMessage(ChatColor.RED + "Un shop n'existe pas \u00E0 cette position.");
+                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
+                return true;
+            }
+
+            if(shop.getOwner() == null || !shop.getOwner().equals(player.getUniqueId())) {
+                sender.sendMessage(ChatColor.RED + "Vous ne poss\u00E9dez pas ce shop.");
+                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
+                return true;
+            }
+
+            UUID uuid = null;
+            String name = null;
+            for(Player pl : Bukkit.getOnlinePlayers()) {
+                if(pl.getName().equalsIgnoreCase(args[1])) {
+                    uuid = pl.getUniqueId();
+                    name = pl.getName();
+                    break;
+                }
+            }
+
+            if(uuid == null) {
+                for(OfflinePlayer pl : Bukkit.getOfflinePlayers()) {
+                    if(pl.getName().equalsIgnoreCase(args[1])) {
+                        uuid = pl.getUniqueId();
+                        name = pl.getName();
+                        break;
+                    }
+                }
+            }
+
+            if(uuid == null) {
+                sender.sendMessage(ChatColor.RED + "Ce joueur n'a pas pu être trouvé.");
+                sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
+                return true;
+            }
+
+            List<ShopManager> managers = plugin.getShopHandler().getManagers(shop);
+            for(ShopManager manager : managers) {
+                if(manager.getUser().equals(uuid)) {
+                    plugin.getDAOFactory().getShopManagerDAO().delete(manager);
+                    player.sendMessage(ChatColor.DARK_AQUA + "[SHOP] " + ChatColor.GREEN + name + ChatColor.AQUA
+                            + " n'est plus manager du shop " + ChatColor.GREEN + shop.getName() + ChatColor.AQUA + ".");
+                    return true;
+                }
+            }
+
+            plugin.getDAOFactory().getShopManagerDAO().create(new ShopManager(0, shop.getId(), uuid));
+            player.sendMessage(ChatColor.DARK_AQUA + "[SHOP] " + ChatColor.GREEN + name + ChatColor.AQUA
+                    + " est devenu manager du shop " + shop.getName() + ChatColor.AQUA + ".");
+            return true;
         } else {
             sender.sendMessage(ChatColor.RED + "Vous devez fournir au moins un argument.");
-            sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove> [nom] [prix]");
+            sender.sendMessage(ChatColor.RED + "Utilisation: /shop <create|remove|manager> [nom] [prix]");
             return true;
         }
         return true;
@@ -144,6 +205,11 @@ public class ShopCommand implements CommandExecutor {
             if(args.length <= 1) {
                 res.add("create");
                 res.add("remove");
+                res.add("manager");
+            } else if(args.length == 2 && args[0].equalsIgnoreCase("manager")) {
+                for(Player pl : Bukkit.getOnlinePlayers()) {
+                    res.add(pl.getName());
+                }
             }
             return res;
         }

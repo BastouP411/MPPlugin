@@ -18,7 +18,7 @@
 package fr.bastoup.mpplugin.dao;
 
 import fr.bastoup.mpplugin.beans.Shop;
-import fr.bastoup.mpplugin.beans.User;
+import fr.bastoup.mpplugin.beans.ShopManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,24 +31,24 @@ import java.util.UUID;
 import static fr.bastoup.mpplugin.dao.DAOUtils.close;
 import static fr.bastoup.mpplugin.dao.DAOUtils.preparedStatementInit;
 
-public class ShopDAOImpl implements ShopDAO {
+public class ShopManagerDAOImpl implements ShopManagerDAO{
 
-    private static final String SQL_SELECT = "SELECT * FROM shops WHERE id = ?;";
-    private static final String SQL_SELECT_COORDS = "SELECT * FROM shops WHERE x = ? AND y = ? AND z = ?;";
-    private static final String SQL_SELECT_UUID = "SELECT * FROM shops WHERE owner = ?;";
-    private static final String SQL_SELECT_UUID_NAME = "SELECT * FROM shops WHERE owner = ? AND LOWER(name) = LOWER(?);";
-    private static final String SQL_INSERT = "INSERT INTO shops (owner, name, bank, price, x, y, z, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-    private static final String SQL_UPDATE = "UPDATE shops SET owner = ?, name = ?, bank = ?, price = ?, x = ?, y = ?, z = ?, stock=? WHERE id = ?;";
-    private static final String SQL_DELETE = "DELETE FROM shops WHERE id = ?;";
+    private static final String SQL_SELECT = "SELECT * FROM managers WHERE id = ?;";
+    private static final String SQL_SELECT_USER = "SELECT * FROM managers WHERE user = ?;";
+    private static final String SQL_SELECT_SHOP = "SELECT * FROM managers WHERE shop = ?;";
+    private static final String SQL_INSERT = "INSERT INTO managers (user, shop) VALUES (?, ?);";
+    private static final String SQL_UPDATE = "UPDATE managers SET user = ?, shop = ? WHERE id = ?;";
+    private static final String SQL_DELETE = "DELETE FROM managers WHERE id = ?;";
+    private static final String SQL_DELETE_SHOP = "DELETE FROM managers WHERE shop = ?;";
 
     private DAOFactory factory;
 
-    public ShopDAOImpl(DAOFactory factory) {
+    public ShopManagerDAOImpl(DAOFactory factory) {
         this.factory = factory;
     }
 
     @Override
-    public void create(Shop shop) {
+    public void create(ShopManager manager) {
         Connection con = null;
         PreparedStatement preparedStatement = null;
         ResultSet autogenValues = null;
@@ -56,26 +56,20 @@ public class ShopDAOImpl implements ShopDAO {
         try {
             con = factory.getConnection();
             preparedStatement = preparedStatementInit( con, SQL_INSERT, true,
-                    shop.getOwner() == null ? null : shop.getOwner().toString(),
-                    shop.getName(),
-                    shop.isBank(),
-                    shop.getPrice(),
-                    shop.getX(),
-                    shop.getY(),
-                    shop.getZ(),
-                    shop.getStock()
+                    manager.getUser().toString(),
+                    manager.getShop()
             );
             int status = preparedStatement.executeUpdate();
             if ( status == 0 ) {
-                throw new DAOException( "No Shop created." );
+                throw new DAOException( "No Manager created." );
             }
 
             autogenValues = preparedStatement.getGeneratedKeys();
 
             if(autogenValues.next()) {
-                shop.setId(autogenValues.getLong(1));
+                manager.setId(autogenValues.getLong(1));
             } else {
-                throw new DAOException( "No Shop created." );
+                throw new DAOException( "No Manager created." );
             }
 
         } catch ( SQLException e ) {
@@ -86,22 +80,16 @@ public class ShopDAOImpl implements ShopDAO {
     }
 
     @Override
-    public void update(Shop shop) {
+    public void update(ShopManager manager) {
         Connection con = null;
         PreparedStatement preparedStatement = null;
 
         try {
             con = factory.getConnection();
             preparedStatement = preparedStatementInit( con, SQL_UPDATE, false,
-                    shop.getOwner() == null ? null : shop.getOwner().toString(),
-                    shop.getName(),
-                    shop.isBank(),
-                    shop.getPrice(),
-                    shop.getX(),
-                    shop.getY(),
-                    shop.getZ(),
-                    shop.getStock(),
-                    shop.getId()
+                    manager.getUser().toString(),
+                    manager.getShop(),
+                    manager.getId()
             );
             preparedStatement.executeUpdate();
         } catch ( SQLException e ) {
@@ -112,13 +100,13 @@ public class ShopDAOImpl implements ShopDAO {
     }
 
     @Override
-    public void delete(Shop shop) {
+    public void delete(ShopManager manager) {
         Connection con = null;
         PreparedStatement preparedStatement = null;
 
         try {
             con = factory.getConnection();
-            preparedStatement = preparedStatementInit( con, SQL_DELETE, false, shop.getId());
+            preparedStatement = preparedStatementInit( con, SQL_DELETE, false, manager.getId());
             preparedStatement.executeUpdate();
         } catch ( SQLException e ) {
             throw new DAOException( e );
@@ -128,25 +116,41 @@ public class ShopDAOImpl implements ShopDAO {
     }
 
     @Override
-    public List<Shop> getUserShops(UUID uuid) {
-        return getUserShops(uuid == null ? null : uuid.toString());
+    public void deleteShop(long shop) {
+        Connection con = null;
+        PreparedStatement preparedStatement = null;
+
+        try {
+            con = factory.getConnection();
+            preparedStatement = preparedStatementInit( con, SQL_DELETE_SHOP, false, shop);
+            preparedStatement.executeUpdate();
+        } catch ( SQLException e ) {
+            throw new DAOException( e );
+        } finally {
+            close( preparedStatement, con );
+        }
     }
 
     @Override
-    public List<Shop> getUserShops(String uuid) {
+    public List<ShopManager> getManaged(UUID uuid) {
+        return getManaged(uuid.toString());
+    }
+
+    @Override
+    public List<ShopManager> getManaged(String uuid) {
         Connection con = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
 
-        List<Shop> shops = new ArrayList<>();
+        List<ShopManager> managers = new ArrayList<>();
 
         try {
             con = factory.getConnection();
-            preparedStatement = preparedStatementInit( con, SQL_SELECT_UUID, false, uuid );
+            preparedStatement = preparedStatementInit( con, SQL_SELECT_USER, false, uuid );
             resultSet = preparedStatement.executeQuery();
 
             while ( resultSet.next() ) {
-                shops.add(map( resultSet ));
+                managers.add(map( resultSet ));
             }
         } catch ( SQLException e ) {
             throw new DAOException( e );
@@ -154,28 +158,24 @@ public class ShopDAOImpl implements ShopDAO {
             close( resultSet, preparedStatement, con );
         }
 
-        return shops;
+        return managers;
     }
 
     @Override
-    public Shop getUserShop(UUID uuid, String name) {
-        return getUserShop(uuid == null ? null : uuid.toString(), name);
-    }
-
-    @Override
-    public Shop getUserShop(String uuid, String name) {
+    public List<ShopManager> getManagers(long shop) {
         Connection con = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-        Shop shop = null;
+
+        List<ShopManager> managers = new ArrayList<>();
 
         try {
             con = factory.getConnection();
-            preparedStatement = preparedStatementInit( con, SQL_SELECT_UUID_NAME, false, uuid, name );
+            preparedStatement = preparedStatementInit( con, SQL_SELECT_SHOP, false, shop );
             resultSet = preparedStatement.executeQuery();
 
-            if ( resultSet.next() ) {
-                shop = map( resultSet );
+            while ( resultSet.next() ) {
+                managers.add(map( resultSet ));
             }
         } catch ( SQLException e ) {
             throw new DAOException( e );
@@ -183,15 +183,15 @@ public class ShopDAOImpl implements ShopDAO {
             close( resultSet, preparedStatement, con );
         }
 
-        return shop;
+        return managers;
     }
 
     @Override
-    public Shop get(long id) {
+    public ShopManager get(long id) {
         Connection con = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-        Shop shop = null;
+        ShopManager manager = null;
 
         try {
             con = factory.getConnection();
@@ -199,7 +199,7 @@ public class ShopDAOImpl implements ShopDAO {
             resultSet = preparedStatement.executeQuery();
 
             if ( resultSet.next() ) {
-                shop = map( resultSet );
+                manager = map( resultSet );
             }
         } catch ( SQLException e ) {
             throw new DAOException( e );
@@ -207,44 +207,14 @@ public class ShopDAOImpl implements ShopDAO {
             close( resultSet, preparedStatement, con );
         }
 
-        return shop;
+        return manager;
     }
 
-    @Override
-    public Shop get(int x, int y, int z) {
-        Connection con = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        Shop shop = null;
-
-        try {
-            con = factory.getConnection();
-            preparedStatement = preparedStatementInit( con, SQL_SELECT_COORDS, false, x, y, z );
-            resultSet = preparedStatement.executeQuery();
-
-            if ( resultSet.next() ) {
-                shop = map( resultSet );
-            }
-        } catch ( SQLException e ) {
-            throw new DAOException( e );
-        } finally {
-            close( resultSet, preparedStatement, con );
-        }
-
-        return shop;
-    }
-
-    private Shop map(ResultSet resultSet) throws SQLException {
-        return new Shop(
+    private ShopManager map(ResultSet resultSet) throws SQLException {
+        return new ShopManager(
                 resultSet.getLong("id"),
-                resultSet.getString("owner"),
-                resultSet.getString("name"),
-                resultSet.getBoolean("bank"),
-                resultSet.getInt("price"),
-                resultSet.getInt("x"),
-                resultSet.getInt("y"),
-                resultSet.getInt("z"),
-                resultSet.getLong("stock")
+                resultSet.getLong("shop"),
+                resultSet.getString("user")
         );
     }
 }

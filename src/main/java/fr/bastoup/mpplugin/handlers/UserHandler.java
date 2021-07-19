@@ -20,6 +20,7 @@ package fr.bastoup.mpplugin.handlers;
 import fr.bastoup.mpplugin.MPPlugin;
 import fr.bastoup.mpplugin.beans.User;
 import fr.bastoup.mpplugin.dao.UserDAO;
+import org.bukkit.Location;
 
 import java.util.UUID;
 
@@ -53,7 +54,7 @@ public class UserHandler {
         return usr;
     }
 
-    public void addMoney(User usr, int money) throws HandlersException {
+    public void addMoney(User usr, long money) throws HandlersException {
         if(usr.getMoney() + money < 0) {
             throw new HandlersException("The user has not enough money");
         }
@@ -62,7 +63,7 @@ public class UserHandler {
         this.plugin.getDAOFactory().getUserDAO().update(usr);
     }
 
-    public void removeMoney(User usr, int money) throws HandlersException {
+    public void removeMoney(User usr, long money) throws HandlersException {
         if(usr.getMoney() - money < 0) {
             throw new HandlersException("The user has not enough money");
         }
@@ -71,10 +72,18 @@ public class UserHandler {
         this.plugin.getDAOFactory().getUserDAO().update(usr);
     }
 
-    public void transferMoney(User from, User to, int money) throws HandlersException {
+    public void transferMoney(User from, User to, long money) throws HandlersException {
         if(from.getUUID().equals(to.getUUID()))
             return;
         removeMoney(from, money);
         addMoney(to, money);
+    }
+
+    public void setHome(User usr, Location loc) {
+        usr.setHomeX((long) loc.getBlockX());
+        usr.setHomeY((long) loc.getBlockY());
+        usr.setHomeZ((long) loc.getBlockZ());
+        usr.setHomeWorld(loc.getWorld().getUID());
+        this.plugin.getDAOFactory().getUserDAO().update(usr);
     }
 }

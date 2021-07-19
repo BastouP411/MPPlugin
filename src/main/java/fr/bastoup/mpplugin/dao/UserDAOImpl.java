@@ -30,8 +30,8 @@ import static fr.bastoup.mpplugin.dao.DAOUtils.*;
 public class UserDAOImpl implements UserDAO {
 
     private static final String SQL_SELECT_UUID = "SELECT * FROM users WHERE uuid = ?";
-    private static final String SQL_INSERT = "INSERT INTO users (uuid, money) VALUES (?, ?)";
-    private static final String SQL_UPDATE = "UPDATE users SET money=? WHERE uuid=?;";
+    private static final String SQL_INSERT = "INSERT INTO users (uuid, money, homeX, homeY, homeZ, homeWorld) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String SQL_UPDATE = "UPDATE users SET money=?, homeX=?, homeY=?, homeZ=?, homeWorld=? WHERE uuid=?;";
 
     private DAOFactory factory;
 
@@ -46,7 +46,14 @@ public class UserDAOImpl implements UserDAO {
 
         try {
             con = factory.getConnection();
-            preparedStatement = preparedStatementInit( con, SQL_INSERT, false, user.getUUID().toString(), user.getMoney());
+            preparedStatement = preparedStatementInit( con, SQL_INSERT, false,
+                    user.getUUID().toString(),
+                    user.getMoney(),
+                    user.getHomeX(),
+                    user.getHomeY(),
+                    user.getHomeZ(),
+                    user.getHomeWorld() == null ? null : user.getHomeWorld().toString()
+            );
             int statut = preparedStatement.executeUpdate();
             if ( statut == 0 ) {
                 throw new DAOException( "No User created." );
@@ -65,7 +72,14 @@ public class UserDAOImpl implements UserDAO {
 
         try {
             con = factory.getConnection();
-            preparedStatement = preparedStatementInit( con, SQL_UPDATE, false, user.getMoney(), user.getUUID().toString() );
+            preparedStatement = preparedStatementInit( con, SQL_UPDATE, false,
+                    user.getMoney(),
+                    user.getHomeX(),
+                    user.getHomeY(),
+                    user.getHomeZ(),
+                    user.getHomeWorld() == null ? null : user.getHomeWorld().toString(),
+                    user.getUUID().toString()
+            );
             preparedStatement.executeUpdate();
         } catch ( SQLException e ) {
             throw new DAOException( e );
@@ -105,7 +119,11 @@ public class UserDAOImpl implements UserDAO {
     private User map(ResultSet resultSet) throws SQLException {
         return new User(
                 resultSet.getString("uuid"),
-                resultSet.getInt("money")
+                resultSet.getLong("money"),
+                DAOUtils.getNullableLong(resultSet, "homeX"),
+                DAOUtils.getNullableLong(resultSet, "homeY"),
+                DAOUtils.getNullableLong(resultSet, "homeZ"),
+                resultSet.getString("homeWorld")
         );
     }
 }

@@ -19,8 +19,10 @@ package fr.bastoup.mpplugin.events;
 
 import fr.bastoup.mpplugin.MPPlugin;
 import fr.bastoup.mpplugin.beans.Shop;
+import fr.bastoup.mpplugin.beans.ShopManager;
 import fr.bastoup.mpplugin.beans.User;
 import fr.bastoup.mpplugin.handlers.HandlersException;
+import fr.bastoup.mpplugin.handlers.ShopHandler;
 import fr.bastoup.mpplugin.inventory.ShopInventory;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -42,6 +44,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import java.util.List;
 
 public class ShopEvents implements Listener {
     
@@ -145,10 +149,49 @@ public class ShopEvents implements Listener {
             }
 
             Shop shop = plugin.getShopHandler().getShop(loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
-            if(shop != null && !shop.isBank() && !event.getPlayer().getUniqueId().equals(shop.getOwner())) {
+
+            if(shop == null)
+                return;
+
+            boolean openShop = true;
+            boolean owns = false;
+
+            if(shop.isBank()) {
+                openShop = false;
+            } else if(event.getPlayer().getUniqueId().equals(shop.getOwner())){
+                openShop = false;
+                owns = true;
+            } else {
+                List<ShopManager> managers = plugin.getShopHandler().getManagers(shop);
+                for(ShopManager m : managers) {
+                    if(event.getPlayer().getUniqueId().equals(m.getUser())) {
+                        openShop = false;
+                        owns = true;
+                        break;
+                    }
+                }
+            }
+
+            if(openShop) {
                 ShopInventory gui = new ShopInventory(plugin, inv, shop);
                 event.getPlayer().openInventory(gui.getInventory());
                 event.setCancelled(true);
+            } else if(owns) {
+                long stock = shop.getStock();
+                if(stock > 0) {
+                    User usr = plugin.getUserHandler().getOrCreateUser(event.getPlayer().getUniqueId());
+                    String currency = plugin.getConfig().getString("currency");
+                    try {
+                        plugin.getUserHandler().addMoney(usr, stock);
+                    } catch (HandlersException e) {
+                        event.getPlayer().sendMessage(ChatColor.RED + "Le shop a eu un probl\u00e8me.");
+                        e.printStackTrace();
+                    }
+                    plugin.getShopHandler().resetShopMoney(shop);
+                    event.getPlayer().sendMessage(ChatColor.DARK_AQUA + "[SHOP] " + ChatColor.AQUA + "Vous avez r\u00e9cup\u00e9r\u00e9 "
+                            + ChatColor.GREEN + stock + " " + currency + ChatColor.AQUA + " dans votre shop "
+                            + ChatColor.GREEN + shop.getName() + ChatColor.AQUA + ".");
+                }
             }
         }
     }
@@ -201,7 +244,8 @@ public class ShopEvents implements Listener {
             }
 
             try {
-                plugin.getUserHandler().transferMoney(usr, plugin.getUserHandler().getOrCreateUser(shop.getOwner()), shop.getPrice());
+                plugin.getUserHandler().removeMoney(usr, shop.getPrice());
+                plugin.getShopHandler().addShopMoney(shop, shop.getPrice());
             } catch (HandlersException e) {
                 event.getWhoClicked().sendMessage(ChatColor.RED + "Vous n'avez pas assez d'argent.");
                 event.setCancelled(true);
@@ -223,8 +267,19 @@ public class ShopEvents implements Listener {
             Player owner = Bukkit.getPlayer(shop.getOwner());
             if(owner != null) {
                 owner.sendMessage(ChatColor.DARK_AQUA + "[SHOP] " + ChatColor.AQUA + "Vous avez re\u00e7u "
-                        + ChatColor.GREEN + shop.getPrice() + " " + currency + ChatColor.AQUA + " de votre shop "
+                        + ChatColor.GREEN + shop.getPrice() + " " + currency + ChatColor.AQUA + " dans votre shop "
                         + ChatColor.GREEN + shop.getName() + ChatColor.AQUA + ".");
+            }
+
+            List<ShopManager> managers = plugin.getShopHandler().getManagers(shop);
+
+            for (ShopManager manager: managers) {
+                Player man = Bukkit.getPlayer(manager.getUser());
+                if(man != null) {
+                    man.sendMessage(ChatColor.DARK_AQUA + "[SHOP] " + ChatColor.AQUA + "Vous avez re\u00e7u "
+                            + ChatColor.GREEN + shop.getPrice() + " " + currency + ChatColor.AQUA + " dans votre shop "
+                            + ChatColor.GREEN + shop.getName() + ChatColor.AQUA + ".");
+                }
             }
 
         }

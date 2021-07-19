@@ -19,6 +19,7 @@ package fr.bastoup.mpplugin.handlers;
 
 import fr.bastoup.mpplugin.MPPlugin;
 import fr.bastoup.mpplugin.beans.Shop;
+import fr.bastoup.mpplugin.beans.ShopManager;
 import fr.bastoup.mpplugin.beans.User;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -56,6 +57,7 @@ public class ShopHandler {
         }
 
         plugin.getDAOFactory().getShopDAO().delete(shop);
+        plugin.getDAOFactory().getShopManagerDAO().deleteShop(shop.getId());
 
         Block block = world.getBlockAt(x, y, z);
         if(block.getType().toString().toLowerCase().contains("sign")) {
@@ -97,7 +99,7 @@ public class ShopHandler {
         sign.setLine(3, "");
         sign.setGlowingText(false);
         sign.update();
-        Shop shop = new Shop(0, owner, name, false, price, x, y, z);
+        Shop shop = new Shop(0, owner, name, false, price, x, y, z, 0);
         plugin.getDAOFactory().getShopDAO().create(shop);
         return shop;
     }
@@ -129,12 +131,26 @@ public class ShopHandler {
         sign.setLine(3, "");
         sign.setGlowingText(false);
         sign.update();
-        Shop shop = new Shop(0, (String)null, name, true, price, x, y, z);
+        Shop shop = new Shop(0, (String)null, name, true, price, x, y, z, 0);
         plugin.getDAOFactory().getShopDAO().create(shop);
         return shop;
     }
 
     public List<Shop> getShops(UUID uuid) {
         return plugin.getDAOFactory().getShopDAO().getUserShops(uuid);
+    }
+
+    public List<ShopManager> getManagers(Shop shop) {
+        return plugin.getDAOFactory().getShopManagerDAO().getManagers(shop.getId());
+    }
+
+    public void addShopMoney(Shop shop, long money) {
+        shop.setStock(shop.getStock() + money);
+        plugin.getDAOFactory().getShopDAO().update(shop);
+    }
+
+    public void resetShopMoney(Shop shop) {
+        shop.setStock(0);
+        plugin.getDAOFactory().getShopDAO().update(shop);
     }
 }

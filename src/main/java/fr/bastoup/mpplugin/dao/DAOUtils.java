@@ -70,4 +70,9 @@ public class DAOUtils {
         close(statement);
         close(connexion);
     }
+
+    public static Long getNullableLong(ResultSet set, String col) throws SQLException {
+        long res = set.getLong(col);
+        return set.wasNull() ? null : res;
+    }
 }

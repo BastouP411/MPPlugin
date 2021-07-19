@@ -23,6 +23,11 @@ public class User {
 
     private UUID uuid;
     private long money;
+    private Long homeX;
+    private Long homeY;
+    private Long homeZ;
+    private UUID homeWorld;
+
 
     public User(UUID uuid, long money) {
         this.uuid = uuid;
@@ -32,6 +37,24 @@ public class User {
     public User(String uuid, long money) {
         this.uuid = uuid == null ? null : UUID.fromString(uuid);
         this.money = money;
+    }
+
+    public User(String uuid, long money, Long homeX, Long homeY, Long homeZ, String homeWorld) {
+        this.uuid = uuid == null ? null : UUID.fromString(uuid);
+        this.money = money;
+        this.homeX = homeX;
+        this.homeY = homeY;
+        this.homeZ = homeZ;
+        this.homeWorld = homeWorld == null ? null : UUID.fromString(homeWorld);
+    }
+
+    public User(UUID uuid, long money, Long homeX, Long homeY, Long homeZ, UUID homeWorld) {
+        this.uuid = uuid;
+        this.money = money;
+        this.homeX = homeX;
+        this.homeY = homeY;
+        this.homeZ = homeZ;
+        this.uuid = homeWorld;
     }
 
     public UUID getUUID() {
@@ -52,5 +75,41 @@ public class User {
 
     public void setMoney(long money) {
         this.money = money;
+    }
+
+    public Long getHomeX() {
+        return homeX;
+    }
+
+    public void setHomeX(Long homeX) {
+        this.homeX = homeX;
+    }
+
+    public Long getHomeY() {
+        return homeY;
+    }
+
+    public void setHomeY(Long homeY) {
+        this.homeY = homeY;
+    }
+
+    public Long getHomeZ() {
+        return homeZ;
+    }
+
+    public void setHomeZ(Long homeZ) {
+        this.homeZ = homeZ;
+    }
+
+    public UUID getHomeWorld() {
+        return homeWorld;
+    }
+
+    public void setHomeWorld(UUID homeWorld) {
+        this.homeWorld = homeWorld;
+    }
+
+    public void setHomeWorld(String homeWorld) {
+        this.homeWorld = homeWorld == null ? null : UUID.fromString(homeWorld);
     }
 }
